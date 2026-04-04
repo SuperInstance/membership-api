@@ -163,6 +163,40 @@ export default {
       return new Response(JSON.stringify({ totalMembers: Object.values(byTier).reduce((a, b) => a + b, 0), byTier, totalRequests: totalReqs }), { headers: h });
     }
 
+
+    // ── Dual Gini Index (Fleet Economics paper) ──
+    // Ga = asset inequality, Go = obligation burden inequality
+    // Golden Band stability: |Ga - Go| in [0.2, 0.4]
+    if (url.pathname === '/api/gini') {
+      const list = await env.MEMBERSHIP_KV.list({ prefix: 'member:', limit: 100 });
+      const members: Member[] = [];
+      for (const key of list.keys) {
+        const m = await env.MEMBERSHIP_KV.get<Member>(key.name, 'json');
+        if (m) members.push(m);
+      }
+      // Asset proxy: request count (more requests = more assets consumed)
+      const assets = members.map(m => m.requestCount).sort((a, b) => a - b);
+      // Obligation proxy: domains bound (more domains = more obligation)
+      const obligations = members.map(m => m.domains.length).sort((a, b) => a - b);
+      const gini = (arr: number[]) => {
+        const n = arr.length;
+        if (n === 0) return 0;
+        const sum = arr.reduce((a, b) => a + b, 0);
+        if (sum === 0) return 0;
+        let absDiff = 0;
+        for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) absDiff += Math.abs(arr[i] - arr[j]);
+        return absDiff / (2 * n * sum);
+      };
+      const ga = gini(assets);
+      const go = gini(obligations);
+      const spread = Math.abs(ga - go);
+      const stability = spread >= 0.2 && spread <= 0.4 ? 'GOLDEN BAND (stable)' : spread > 0.4 ? 'DIVERGENT (instability risk)' : 'CONVERGENT (stagnation risk)';
+      return new Response(JSON.stringify({
+        ga: Math.round(ga * 100) / 100, go: Math.round(go * 100) / 100,
+        spread: Math.round(spread * 100) / 100, stability, members: members.length,
+        interpretation: 'Fleet economy health — golden band = optimal productive tension',
+      }), { headers: h });
+    }
     // A2A: membership check for fleet
     if (url.pathname === '/api/a2a/check') {
       const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '');
