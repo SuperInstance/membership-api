@@ -1,0 +1,8 @@
+name = "membership-api"
+main = "src/worker.ts"
+compatibility_date = "2024-01-01"
+account_id = "049ff5e84ecf636b53b162cbb580aae6"
+
+[[kv_namespaces]]
+binding = "MEMBERSHIP_KV"
+id = "a93f87fa61d34d809b2d3fc782cee32e"
