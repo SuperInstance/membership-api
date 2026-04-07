@@ -1,71 +1,64 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Lucineer/capitaine/master/docs/capitaine-logo.jpg" alt="Capitaine" width="120">
-</p>
+You don't need a complex third-party service to manage access for your agent fleet.
 
-<h1 align="center">membership-api</h1>
+# Membership API
 
-<p align="center">Membership and access control for the cocapn ecosystem.</p>
-
-<p align="center">
-  <a href="https://github.com/Lucineer/membership-api/issues">Issues</a> ·
-  <a href="#the-fleet">The Fleet</a>
-</p>
+Tiered access, seat management, and transparent billing built for the Cocapn Fleet protocol.
 
 ---
 
-**Fleet service** · Powered by [Capitaine](https://github.com/Lucineer/capitaine) · [Cocapn](https://github.com/Lucineer/cocapn)
+## Why it Exists
 
-A cocapn fleet service running on Cloudflare Workers.
+When your open-source agent project gains users, you need a way to manage access and billing. This API provides that core membership logic so you don't have to rebuild it. It's designed to be forked and owned by you.
+
+## Try it Live
+
+Test the public instance:
+https://the-fleet.casey-digennaro.workers.dev
+
+You can call tier endpoints and inspect quota schemas.
 
 ## Quick Start
 
-```bash
-gh repo fork Lucineer/membership-api --clone
-cd membership-api
-npx wrangler login
-npx wrangler deploy
-```
+1.  **Fork this repository.** This is designed to be modified.
+2.  ️ Clone your fork and deploy to Cloudflare Workers: `npx wrangler deploy`
+3.  Edit tier rules, pricing, and limits directly in `src/config.ts`. It's just TypeScript.
 
-## The Fleet
+## What It Is
 
+A stateless API (~1200 lines of TypeScript) running on Cloudflare Workers. It manages membership tiers, request quotas, and billing associations. All state is stored in Cloudflare KV; there are no external database dependencies.
 
-<details>
-<summary><strong>⚓ The Fleet</strong></summary>
+## What It Does
 
-**Flagship vessels**
+*   **Manages Tiers:** Provides four pre-configured tiers (Free, Standard, Gold, Enterprise) with daily and monthly quotas.
+*   **Tracks Usage:** Logs requests with transparent cost attribution. You see the exact markup applied.
+*   **Handles Billing:** Includes Stripe webhook handlers and subscription logic. You add your own keys.
+*   **Binds Resources:** Associate domains, agent vessels, and storage with member accounts.
+*   **Composes Natively:** Works with other services in the Cocapn Fleet.
 
-- [cocapn.ai](https://github.com/Lucineer/capitaine)
-- [personallog.ai](https://github.com/Lucineer/personallog-ai)
-- [businesslog.ai](https://github.com/Lucineer/businesslog-ai)
-- [studylog.ai](https://github.com/Lucineer/studylog-ai)
-- [makerlog.ai](https://github.com/Lucineer/makerlog-ai)
-- [playerlog.ai](https://github.com/Lucineer/playerlog-ai)
-- [dmlog.ai](https://github.com/Lucineer/dmlog-ai)
-- [reallog.ai](https://github.com/Lucineer/reallog-ai)
-- [deckboss.ai](https://github.com/Lucineer/deckboss-ai)
+## One Limitation
 
-**Fleet services**
+This API uses Cloudflare KV for storage. It's excellent for metadata and quotas but is not a relational database. Complex reporting or high-volume transaction logging would need a separate service.
 
-- [Fleet Catalog](https://github.com/Lucineer/capitaine/blob/master/docs/fleet/FLEET.md)
-- [Git Agent (full)](https://github.com/Lucineer/git-agent)
-- [Cocapn Lite (minimal)](https://github.com/Lucineer/cocapn-lite)
-- [Fleet Orchestrator](https://github.com/Lucineer/fleet-orchestrator)
-- [Dead Reckoning Engine](https://github.com/Lucineer/dead-reckoning-engine)
-- [Dream Engine](https://github.com/Lucineer/dream-engine)
-- [Seed UI (5 layers)](https://github.com/Lucineer/seed-ui)
+## Enable Live Payments
 
-**For power users**
+To accept payments, set your Stripe keys as environment variables using `wrangler secret put`. All checkout and subscription logic is included. You keep 100% of your revenue.
 
-- [Cocapn Lite (tabula rasa)](https://github.com/Lucineer/cocapn-lite)
-- [Cocapn (core platform)](https://github.com/Lucineer/cocapn)
-- [ZeroClaw (framework)](https://github.com/Lucineer/zeroclaw)
+## Philosophy
 
-[View all 106 repos →](https://github.com/orgs/Lucineer/repositories)
-[Fleet manifest →](https://github.com/Lucineer/capitaine/blob/master/docs/fleet/FLEET.md)
+**Fork-first.** You are meant to run your own modified version. Zero lock-in, zero runtime dependencies, and no hidden platform. All pricing and business logic is in your code.
 
-</details>
+## Contributing
 
+Fork the repository and make the changes you need. If you build something that would benefit others, consider opening a pull request.
 
 ## License
 
-MIT · Superinstance & Lucineer (DiGennaro et al.)
+MIT License
+
+Superinstance & Lucineer (DiGennaro et al.)
+
+---
+
+<div align="center">
+  <a href="https://the-fleet.casey-digennaro.workers.dev">The Fleet</a> • <a href="https://cocapn.ai">Cocapn</a>
+</div>
