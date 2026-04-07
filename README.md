@@ -1,63 +1,43 @@
-You don't need a complex third-party service to manage access for your agent fleet.
-
 # Membership API
 
-Tiered access, seat management, and transparent billing built for the Cocapn Fleet protocol.
+A minimal API for handling tiered memberships and usage billing within the Cocapn Fleet. You run it, you control it.
 
 ---
 
-## Why it Exists
+## Why this exists
+Third-party billing services add complexity, cost, and lock-in. This provides the core logic for memberships—tiers, quotas, and payments—as open-source code you deploy yourself. You keep full control over your data and revenue.
 
-When your open-source agent project gains users, you need a way to manage access and billing. This API provides that core membership logic so you don't have to rebuild it. It's designed to be forked and owned by you.
+## What it is
+A Cloudflare Worker that uses KV storage. It manages member tiers, tracks request usage against daily quotas, and handles subscription billing via Stripe. All configuration is in your code.
 
-## Try it Live
+## Quick start
+1.  **Fork this repository.** This is working code, not a library.
+2.  **Deploy to Cloudflare Workers:**
+    ```bash
+    npx wrangler deploy
+    ```
+3.  **Edit the tier definitions** in `src/tiers.ts` to set your quotas, prices, and features.
+4.  (Optional) **Add your Stripe keys** as secrets to enable live payments.
 
-Test the public instance:
-https://the-fleet.casey-digennaro.workers.dev
+A public reference instance is available for testing: [https://the-fleet.casey-digennaro.workers.dev/membership](https://the-fleet.casey-digennaro.workers.dev/membership)
 
-You can call tier endpoints and inspect quota schemas.
+## What it does
+*   **Defines membership tiers** (Free, Standard, Gold, Enterprise by default) with configurable daily request quotas and transparent, cost-plus pricing.
+*   **Tracks usage** and attributes costs per request, providing itemized logs.
+*   **Manages subscriptions** through integrated Stripe checkout and webhook handlers.
+*   **Binds resources** like domains or fleet vessels to specific member accounts.
+*   **Stores all state** in Cloudflare KV. There are zero external runtime dependencies.
 
-## Quick Start
+## One limitation
+This is built for the Cloudflare Workers ecosystem. If you're not using Workers and KV, you'll need to adapt the storage layer.
 
-1.  **Fork this repository.** This is designed to be modified.
-2.  ️ Clone your fork and deploy to Cloudflare Workers: `npx wrangler deploy`
-3.  Edit tier rules, pricing, and limits directly in `src/config.ts`. It's just TypeScript.
+## Keep your revenue
+When you add your Stripe keys, all payment processing runs in your worker. Stripe's fees apply, but no additional cut is taken.
 
-## What It Is
+---
 
-A stateless API (~1200 lines of TypeScript) running on Cloudflare Workers. It manages membership tiers, request quotas, and billing associations. All state is stored in Cloudflare KV; there are no external database dependencies.
-
-## What It Does
-
-*   **Manages Tiers:** Provides four pre-configured tiers (Free, Standard, Gold, Enterprise) with daily and monthly quotas.
-*   **Tracks Usage:** Logs requests with transparent cost attribution. You see the exact markup applied.
-*   **Handles Billing:** Includes Stripe webhook handlers and subscription logic. You add your own keys.
-*   **Binds Resources:** Associate domains, agent vessels, and storage with member accounts.
-*   **Composes Natively:** Works with other services in the Cocapn Fleet.
-
-## One Limitation
-
-This API uses Cloudflare KV for storage. It's excellent for metadata and quotas but is not a relational database. Complex reporting or high-volume transaction logging would need a separate service.
-
-## Enable Live Payments
-
-To accept payments, set your Stripe keys as environment variables using `wrangler secret put`. All checkout and subscription logic is included. You keep 100% of your revenue.
-
-## Philosophy
-
-**Fork-first.** You are meant to run your own modified version. Zero lock-in, zero runtime dependencies, and no hidden platform. All pricing and business logic is in your code.
-
-## Contributing
-
-Fork the repository and make the changes you need. If you build something that would benefit others, consider opening a pull request.
-
-## License
-
-MIT License
-
+MIT License  
 Superinstance & Lucineer (DiGennaro et al.)
-
----
 
 <div align="center">
   <a href="https://the-fleet.casey-digennaro.workers.dev">The Fleet</a> • <a href="https://cocapn.ai">Cocapn</a>
